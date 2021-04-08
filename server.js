@@ -12,6 +12,11 @@ enum MealTime {
   dinner
 }
 
+enum theCollections {
+  bandlist
+  petlist
+}
+
 enum Genre {
   indie
   rap
@@ -51,10 +56,33 @@ type Query {
   getTime: getTime
   getRandom(range: Int!): getRandom
   DiceRoll(sides: Int!, rolls: Int!): DiceRoll
+  getCollectionCount(collection: theCollections): getCollectionCount
+  bandsInRange(collection: theCollections, start: Int!, end: Int!): bandsInRange
+  getBandByGenre(collection: theCollections, genre: Genre!): getBandByGenre
+  allGenres: [allGenres!]!
+  }
+
+type allGenres {
+  name: String! 
 }
 
 type getRandom {
   number: Int!
+}
+
+type bandsInRange {
+  name: [String!]!
+  start: Int!
+  end: Int!
+}
+
+type getBandByGenre {
+  name: [String!]!
+  genre: String!
+}
+
+type getCollectionCount {
+  count: Int!
 }
 
 type Band {
@@ -73,9 +101,9 @@ const petList = [
 ]
 
 const bandList = [
-    { name: "The Strokes", genre: "Alternative"},
-    { name: "Mt. Joy", genre: "Indie"},
-    { name: "Kanye West", genre: "Rap"}
+    { name: "The Strokes", genre: "alternative"},
+    { name: "Mt. Joy", genre: "indie"},
+    { name: "Kanye West", genre: "rap"}
 ]
 
 
@@ -108,12 +136,11 @@ const root = {
     getTime: () => {
         return {second: 25, minute: 30, hour: 1}
     },
-    getRandom: ({range}) => {
+    getRandom: ({ range }) => {
         const myNum = Math.floor(Math.random() * range) + 1
-        console.log(myNum)
         return { number: myNum }
     },
-    DiceRoll: ({sides, rolls}) => {
+    DiceRoll: ({ sides, rolls }) => {
         const rollList = []
         let currentRoll = 0
 
@@ -128,6 +155,52 @@ const root = {
         }, 0)
 
         return { total: sum, sides: sides, rolls: rollList}
+    },
+    getCollectionCount: ({ collection }) => {
+
+        const allCollection = { bandlist: bandList, petlist: petList}
+        const theCollection = allCollection[collection]
+        
+        let counter = 0
+        for (const obj of theCollection) {
+            counter += 1
+        }
+
+        return { count: counter }
+    },
+    bandsInRange: ({ start, end }) => {
+        const allCollection = { bandlist: bandList, petlist: petList}
+        const theCollection = allCollection.bandlist
+        const my_list = []
+
+        for(let i=start; i < end+1; i++) {
+            if (end > theCollection.length) {
+                my_list[0] = "End is out of range collection"
+                break
+            } else if (start < 0) {
+                my_list[0] = "Start is out of range of collection"
+                break
+            } else {
+                my_list.push(theCollection[i].name)
+            }
+        }
+
+        return { name: my_list }
+    },
+    getBandByGenre: ({ collection, genre }) => {
+        const allCollection = { bandlist: bandList, petlist: petList}
+        const theCollection = allCollection.bandlist
+        const bandsByGenre = []
+
+        for(let i=0; i < theCollection.length; i++) {
+            if (theCollection[i].genre === genre) {
+                bandsByGenre.push(theCollection[i].name)
+            }
+        }
+        return { name: bandsByGenre, genre: genre}
+    },
+    allGenres: () => {
+        return "Shit broke"
     }
   }
 
